@@ -1,0 +1,1370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>webMethods Weekly Updates Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --surface: rgba(255, 255, 255, 0.95);
+            --text-main: #0f172a;
+            --text-muted: #1e293b;
+            --border-color: #e2e8f0;
+            
+            /* Co-Brand Palette */
+            --hcl-blue: #0072ce;
+            --hcl-blue-light: #e0f2fe;
+            --hcl-blue-border: #bae6fd;
+            
+            --bms-pink: #e02475;
+            --bms-purple: #4b286d;
+            --bms-pink-light: #fdf2f8;
+            --bms-pink-border: #fbcfe8;
+
+            /* Ticket Metric Colors */
+            --chg-color: #5b21b6;
+            --ctask-color: #0369a1;
+            --req-color: #0f766e;
+            --ritm-color: #15803d;
+            --inc-color: #c2410c;
+            --prb-color: #b91c1c;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+        }
+
+        /* Highly Vibrant Animated Page Background */
+        body {
+            background: linear-gradient(-45deg, #ff00cc, #3333ff, #00ffff, #00ff66, #ff00cc);
+            background-size: 400% 400%;
+            animation: vibrantBg 12s ease infinite;
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: var(--text-main);
+            padding: 24px 20px;
+            line-height: 1.5;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        @keyframes vibrantBg {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Ambient Glowing Orbs */
+        .ambient-glow-1, .ambient-glow-2 {
+            position: fixed;
+            width: 480px;
+            height: 480px;
+            border-radius: 50%;
+            filter: blur(140px);
+            opacity: 0.5;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .ambient-glow-1 { top: -100px; left: -100px; background: #ff00cc; }
+        .ambient-glow-2 { bottom: -100px; right: -100px; background: #00ffff; }
+
+        /* Decorative Abstract Rings */
+        .decorative-ring-left {
+            position: fixed; top: -15%; left: -10%; width: 50vw; height: 50vw;
+            border: 2px solid rgba(255, 255, 255, 0.4); border-radius: 50%;
+            pointer-events: none; z-index: 0;
+        }
+        .decorative-ring-right {
+            position: fixed; bottom: -20%; right: -15%; width: 65vw; height: 65vw;
+            border: 3px dashed rgba(255, 255, 255, 0.3); border-radius: 50%;
+            pointer-events: none; z-index: 0;
+        }
+
+        /* Wider Container for a fuller page */
+        .container {
+            max-width: 1750px;
+            width: 98%;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Top Card - Mix of Vibrant Magenta Purple & Cyan Blue */
+        header {
+            background: linear-gradient(135deg, #d946ef 0%, #06b6d4 100%);
+            padding: 24px 36px;
+            border-radius: 14px;
+            box-shadow: 0 12px 30px -6px rgba(0, 0, 0, 0.4);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 22px;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 2;
+        }
+
+        .brand-visual-pair {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: rgba(255, 255, 255, 0.98);
+            padding: 10px 20px;
+            border-radius: 30px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        }
+
+        .logo-hcl-img { height: 28px; width: auto; object-fit: contain; }
+        .logo-bms-img { height: 34px; width: auto; object-fit: contain; }
+
+        .logo-hcl-badge {
+            background: linear-gradient(135deg, var(--hcl-blue) 0%, var(--bms-purple) 100%);
+            color: #ffffff; font-size: 15px; font-weight: 800; letter-spacing: 0.5px;
+            padding: 6px 16px; border-radius: 18px; box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        }
+        .logo-bms-badge {
+            background: #ffffff; color: var(--bms-pink); font-size: 15px; font-weight: 900;
+            letter-spacing: 0.5px; padding: 5px 14px; border-radius: 18px; border: 1.5px solid var(--bms-pink);
+            box-shadow: 0 2px 5px rgba(224, 36, 117, 0.15);
+        }
+
+        .brand-connector {
+            width: 20px;
+            height: 2px;
+            background: linear-gradient(90deg, var(--hcl-blue), var(--bms-purple));
+            border-radius: 2px;
+            position: relative;
+        }
+        .brand-connector::after {
+            content: ""; position: absolute; width: 6px; height: 6px;
+            background: var(--bms-purple); border-radius: 50%; top: -2px; left: 7px;
+        }
+
+        .header-title h1 {
+            font-size: 28px;
+            font-weight: 900;
+            letter-spacing: -0.3px;
+            color: #ffffff;
+            text-shadow: 1px 1px 4px rgba(0,0,0,0.2);
+        }
+        .header-title p {
+            color: rgba(255,255,255,0.95);
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        .upload-controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 2;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            font-size: 14px;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+        }
+        .btn-upload {
+            background: #ffffff;
+            color: #d946ef;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .btn-upload:hover { transform: translateY(-1px); box-shadow: 0 6px 12px rgba(0,0,0,0.3); }
+        .btn-template {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            color: #ffffff;
+            backdrop-filter: blur(4px);
+        }
+        .btn-template:hover { background: rgba(255, 255, 255, 0.3); }
+        input[type="file"] { display: none; }
+
+        /* --- ADJUSTED SIDEBAR WIDTH FOR WIDER CARDS --- */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 270px 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        .stakeholder-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            padding: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .team-group {
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .team-group.bms-group { 
+            border-left: 4px solid #fff; 
+            background: linear-gradient(135deg, #d946ef 0%, #7e22ce 100%);
+            padding: 10px 6px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            align-items: center;
+        }
+
+        .team-group.bms-group .team-group-title {
+            border-bottom: 1px solid rgba(255,255,255,0.4);
+            padding-bottom: 4px;
+            margin-bottom: 8px;
+            width: 100%;
+            text-align: center;
+            font-size: 13px; 
+            font-weight: 800; 
+            color: #ffffff;
+            letter-spacing: 0.5px;
+        }
+
+        .team-group.bms-group .member-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center; 
+            padding: 6px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border: 2px solid #ffffff;
+            width: 100%;
+            box-sizing: border-box;
+            gap: 4px;
+        }
+
+        /* RESTORED AVATAR SIZES */
+        .team-group.bms-group .member-avatar {
+            width: 32px;
+            height: 32px;
+            font-size: 14px;
+            border-width: 2px;
+        }
+
+        /* INCREASED NAME SIZES & FORCED SINGLE LINE */
+        .team-group.bms-group .member-name {
+            font-size: 14px; 
+            font-weight: 800;
+            text-align: center;
+            color: #000000;
+            white-space: nowrap;
+        }
+
+        .team-group.hcl-group { 
+            border-left: 4px solid #fff; 
+            background: linear-gradient(135deg, #06b6d4 0%, #2563eb 100%);
+            padding: 10px 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .team-group.hcl-group .team-group-title {
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #ffffff;
+            border-bottom: 1px solid rgba(255,255,255,0.4);
+            padding-bottom: 6px;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+
+        .team-group.hcl-group .team-cards-container {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            width: 100%;
+        }
+
+        .team-group.hcl-group .member-card {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            border: 2px solid #ffffff;
+            padding: 4px 8px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            transition: transform 0.15s ease;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .team-group.hcl-group .member-card:hover { transform: translateY(-2px); }
+
+        /* RESTORED AVATAR SIZES */
+        .team-group.hcl-group .member-avatar {
+            width: 24px;
+            height: 24px;
+            font-size: 10px;
+            border-width: 1.5px;
+        }
+
+        .member-avatar {
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+        .bms-avatar { background: #ffffff; color: var(--bms-pink); border-color: #ffffff; }
+        .hcl-avatar { background: #ffffff; color: var(--hcl-blue); border-color: #ffffff; }
+
+        /* INCREASED NAME SIZES & FORCED SINGLE LINE */
+        .member-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: #111827;
+            outline: none;
+            line-height: 1.2;
+            white-space: nowrap;
+        }
+
+        [spellcheck="false"] { -webkit-spellcheck: false; }
+
+        .content-area {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .nav-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.4);
+            padding-bottom: 10px;
+            overflow-x: auto;
+        }
+
+        .nav-tab {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid var(--border-color);
+            padding: 12px 22px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 800;
+            color: #1e293b;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .nav-tab:hover {
+            color: var(--bms-pink);
+            border-color: #cbd5e1;
+            transform: translateY(-2px);
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(135deg, #d946ef 0%, #06b6d4 100%);
+            color: #ffffff;
+            border-color: transparent;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .tab-stage { position: relative; min-height: 380px; }
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; animation: subtleZoom 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+
+        @keyframes subtleZoom {
+            0% { opacity: 0; transform: scale(0.97); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .card, .highlight-card {
+            border-radius: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.9);
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .highlight-card.outage-theme { 
+            border-color: #ff4d4d; 
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); 
+        }
+        #issuesTab .card { 
+            border-color: #f59e0b; 
+            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); 
+        }
+        .highlight-card.deploy-theme { 
+            border-color: #10b981; 
+            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); 
+        }
+        .highlight-card.deploy-theme .card-title { color: #064e3b; }
+        
+        .highlight-card.upgrade-theme { 
+            border-color: #a855f7; 
+            background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%); 
+        }
+        #ticketsTab .card { 
+            border-color: #3b82f6; 
+            background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%); 
+        }
+
+        .card-title { font-size: 18px; font-weight: 900; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; color: #111827; }
+        
+        .outage-header-flex { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
+        .oncall-badge {
+            background: #ffffff; border: 1px solid #feb2b2; color: #9b2c2c;
+            padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 800;
+            display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        .issue-subheading { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 800; padding: 10px 14px; border-radius: 8px 8px 0 0; margin-top: 10px; }
+        .issue-subheading.prod { background: rgba(255, 255, 255, 0.9); color: #c2410c; border: 1px solid #e2e8f0; border-bottom: none; }
+        .issue-subheading.non-prod { background: rgba(255, 255, 255, 0.9); color: #0369a1; border: 1px solid #e2e8f0; border-bottom: none; margin-top: 24px; }
+
+        .data-table {
+            width: 100%; border-collapse: collapse; font-size: 13px; background: rgba(255, 255, 255, 0.85);
+            border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin-bottom: 4px;
+        }
+        
+        .data-table th, .data-table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid rgba(0,0,0,0.05); color: #0f172a; }
+        .data-table th { background-color: #f8fafc; color: #334155; font-weight: 900; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        .data-table th.sno-col, .data-table td.sno-col { width: 80px; text-align: center; font-weight: 800; }
+        .data-table th.date-col, .data-table td.date-col { width: 140px; }
+        .data-table th.ctask-col, .data-table td.ctask-col { width: 180px; }
+        .data-table th.app-col, .data-table td.app-col { width: 45%; }
+        .data-table th.datetime-col, .data-table td.datetime-col { width: 40%; }
+        .data-table th.action-col, .data-table td.action-col { width: 50px; text-align: center; }
+
+        .btn-del-row { background: transparent; border: none; color: #64748b; font-size: 18px; font-weight: bold; cursor: pointer; padding: 4px 8px; border-radius: 6px; transition: all 0.2s ease; }
+        .btn-del-row:hover { color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+
+        .editable-cell { outline: none; transition: all 0.2s ease; border-radius: 4px; font-weight: 600; }
+        .editable-cell:focus { background-color: #ffffff; box-shadow: inset 0 0 0 2px var(--hcl-blue); }
+        .data-table tr:last-child td { border-bottom: none; }
+
+        .table-action-row { display: flex; gap: 8px; margin-top: 10px; }
+        
+        .btn-action-add { 
+            background: rgba(255, 255, 255, 0.95); 
+            padding: 8px 16px; 
+            font-size: 13px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: 800; 
+            transition: all 0.2s ease; 
+            border: 1px dashed rgba(15, 23, 42, 0.3); 
+            color: #1e293b; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
+        }
+        .btn-action-add:hover { border-color: var(--hcl-blue); color: var(--hcl-blue); background: #ffffff; }
+
+        .ticket-2col-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+        .ticket-metric {
+            padding: 16px 24px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between;
+            border-left: 6px solid transparent; box-shadow: 0 4px 10px rgba(0,0,0,0.05); background: rgba(255, 255, 255, 0.95);
+            border-top: 1px solid rgba(255,255,255,0.8); border-right: 1px solid rgba(255,255,255,0.8); border-bottom: 1px solid rgba(255,255,255,0.8);
+        }
+        .ticket-metric.chg   { border-left-color: var(--chg-color); color: var(--chg-color); }
+        .ticket-metric.ctask { border-left-color: var(--ctask-color); color: var(--ctask-color); }
+        .ticket-metric.req   { border-left-color: var(--req-color); color: var(--req-color); }
+        .ticket-metric.ritm  { border-left-color: var(--ritm-color); color: var(--ritm-color); }
+        .ticket-metric.inc   { border-left-color: var(--inc-color); color: var(--inc-color); }
+        .ticket-metric.prb   { border-left-color: var(--prb-color); color: var(--prb-color); }
+
+        .ticket-label-group { display: flex; flex-direction: column; }
+        .ticket-label-group .metric-name { font-size: 16px; font-weight: 900; letter-spacing: 0.5px; }
+        .ticket-label-group .metric-sub { font-size: 11px; color: var(--text-muted); font-weight: 800; }
+        
+        .ticket-metric input { 
+            width: 90px; text-align: right; font-size: 28px; font-weight: 900; 
+            border: none; background: transparent; color: inherit; 
+            outline: none; border-radius: 8px; padding: 4px;
+        }
+        .ticket-metric input:focus { background: rgba(240, 249, 255, 0.5); box-shadow: inset 0 0 0 2px currentColor; }
+
+        .ticket-total-banner {
+            background: linear-gradient(135deg, #d946ef 0%, #06b6d4 100%); color: #ffffff; padding: 16px 24px;
+            border-radius: 12px; display: flex; justify-content: space-between; align-items: center; font-weight: 800;
+            font-size: 16px; box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        }
+        .ticket-total-banner span:last-child { font-size: 26px; font-weight: 900; }
+
+        @media (max-width: 960px) {
+            .main-layout { grid-template-columns: 1fr; }
+            .ticket-2col-grid { grid-template-columns: 1fr; }
+        }
+
+        /* --- LOCAL FOLDER SYNC OVERLAY --- */
+        #intro-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(15, 23, 42, 0.98);
+            backdrop-filter: blur(10px);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.6s ease-in-out;
+        }
+
+        .intro-text {
+            font-size: 4rem;
+            font-weight: 900;
+            text-align: center;
+            background: linear-gradient(135deg, #d946ef 0%, #06b6d4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            opacity: 0;
+            animation: introReveal 2.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+
+        @keyframes introReveal {
+            0% { opacity: 0; transform: scale(0.9) translateY(20px); filter: blur(10px); }
+            40% { opacity: 1; transform: scale(1.05) translateY(0); filter: blur(0); }
+            100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+        }
+
+        #connect-container {
+            margin-top: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0;
+            animation: fadeIn 1s ease forwards 1.8s;
+        }
+
+        #folder-actions {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            text-align: center;
+            width: 380px;
+        }
+
+        #selection-area {
+            display: none;
+            margin-top: 20px;
+            text-align: left;
+            width: 100%;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        .select-style {
+            padding: 12px 16px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.9);
+            color: #0f172a;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            outline: none;
+            margin-top: 8px;
+        }
+        .select-style:focus { border-color: #06b6d4; }
+        
+        .skip-link {
+            color: #06b6d4; cursor: pointer; text-decoration: underline; font-size: 14px; margin-top: 15px; display: inline-block;
+        }
+    </style>
+</head>
+<body class="theme-outages">
+
+<!-- LANDING OVERLAY - SHAREPOINT LOCAL SYNC WORKAROUND -->
+<div id="intro-overlay">
+    <div class="intro-text">webMethods<br>Weekly Reports</div>
+    <div id="connect-container">
+        
+        <div id="folder-actions">
+            <!-- Initial State: Prompt to connect folder -->
+            <div id="connect-area">
+                <button class="btn btn-upload" style="font-size: 16px; padding: 14px 20px; width: 100%;" onclick="connectSharePointFolder()">
+                    📁 Connect SharePoint Folder
+                </button>
+                <p style="color: rgba(255,255,255,0.7); font-size: 12px; margin-top: 12px;">
+                    Select the local Windows folder that syncs with SharePoint.
+                </p>
+            </div>
+
+            <!-- Second State: Folder connected, choose a week -->
+            <div id="selection-area">
+                <label for="weekDropdown" style="color: #fff; font-size: 1rem; font-weight: 700;">Found Excel Reports:</label>
+                <select id="weekDropdown" class="select-style" onchange="loadSelectedWeek()">
+                    <!-- Populated automatically by JavaScript -->
+                </select>
+            </div>
+            
+            <span class="skip-link" onclick="skipToDashboard()">Skip to Current / Cached Dashboard</span>
+        </div>
+
+    </div>
+</div>
+
+<div class="ambient-glow-1"></div>
+<div class="ambient-glow-2"></div>
+<div class="decorative-ring-left"></div>
+<div class="decorative-ring-right"></div>
+
+<div class="container">
+    <header>
+        <div class="header-left">
+            <div class="brand-visual-pair">
+                <img src="image_16418d.png" alt="HCLTech" class="logo-hcl-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';">
+                <div class="logo-hcl-badge" style="display: none;">HCLTech</div>
+                
+                <div class="brand-connector"></div>
+                
+                <img src="image_163e64.png" alt="BMS" class="logo-bms-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';">
+                <div class="logo-bms-badge" style="display: none;">BMS</div>
+            </div>
+            <div class="header-title">
+                <h1>webMethods Weekly Updates</h1>
+                <p>Week Ending: <strong id="weekendEndingDate" style="color: #ffffff; text-decoration: underline;">--</strong></p>
+            </div>
+        </div>
+        <div class="upload-controls">
+            <button class="btn btn-template" onclick="downloadTemplate()">Download Template</button>
+            <label class="btn btn-upload" for="excelFileInput">Upload Excel</label>
+            <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" onchange="handleFileUpload(event)">
+        </div>
+    </header>
+
+    <div class="main-layout">
+        <!-- Sidebar Stakeholders Layout (Left Side) - WIDTH ADJUSTED -->
+        <aside class="sidebar">
+            <div class="stakeholder-card">
+                
+                <div class="team-group bms-group">
+                    <div class="team-group-title">💼 Customer</div>
+                    <div class="team-cards-container" id="customerContainer">
+                        <div class="member-card">
+                            <div class="member-avatar bms-avatar">AC</div>
+                            <div class="member-name" contenteditable="true" spellcheck="false" oninput="handleNameUpdate(this)">Alex Customer</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="team-group hcl-group">
+                    <div class="team-group-title">🏢 Onshore Team</div>
+                    <div class="team-cards-container" id="onshoreContainer">
+                        <div class="member-card">
+                            <div class="member-avatar hcl-avatar">JD</div>
+                            <div class="member-name" contenteditable="true" spellcheck="false" oninput="handleNameUpdate(this)">John Doe</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="team-group hcl-group">
+                    <div class="team-group-title">🌐 Offshore Team</div>
+                    <div class="team-cards-container" id="offshoreContainer">
+                        <div class="member-card"><div class="member-avatar hcl-avatar">JS</div><div class="member-name" contenteditable="true" spellcheck="false" oninput="handleNameUpdate(this)">Jane Smith</div></div>
+                        <div class="member-card"><div class="member-avatar hcl-avatar">RK</div><div class="member-name" contenteditable="true" spellcheck="false" oninput="handleNameUpdate(this)">Raj Kumar</div></div>
+                        <div class="member-card"><div class="member-avatar hcl-avatar">AL</div><div class="member-name" contenteditable="true" spellcheck="false" oninput="handleNameUpdate(this)">Amy Lin</div></div>
+                        <div class="member-card"><div class="member-avatar hcl-avatar">MP</div><div class="member-name" contenteditable="true" spellcheck="false" oninput="handleNameUpdate(this)">Mike Patel</div></div>
+                        <div class="member-card"><div class="member-avatar hcl-avatar">SR</div><div class="member-name" contenteditable="true" spellcheck="false" oninput="handleNameUpdate(this)">Suresh Raina</div></div>
+                    </div>
+                </div>
+                
+            </div>
+        </aside>
+
+        <!-- Main Content Area (Tabs in the center/right) -->
+        <main class="content-area">
+            <div class="nav-row">
+                <button class="nav-tab active" onclick="switchTab('outagesTab', this, 'theme-outages')">
+                    🚨 Weekend Outages
+                </button>
+                <button class="nav-tab" onclick="switchTab('issuesTab', this, 'theme-issues')">
+                    ⚠️ Issues List
+                </button>
+                <button class="nav-tab" onclick="switchTab('deploymentsTab', this, 'theme-deploy')">
+                    🚀 Production Deployments
+                </button>
+                <button class="nav-tab" onclick="switchTab('upgradeTab', this, 'theme-upgrade')">
+                    ⚙️ Upgrade Highlights
+                </button>
+                <button class="nav-tab" onclick="switchTab('ticketsTab', this, 'theme-tickets')">
+                    📊 Ticket Metrics
+                </button>
+            </div>
+
+            <div class="tab-stage">
+                <!-- Outages Tab -->
+                <div id="outagesTab" class="tab-pane active">
+                    <div class="highlight-card outage-theme">
+                        <div class="outage-header-flex">
+                            <div class="card-title">
+                                🚨 Weekend Outages
+                            </div>
+                            <div class="oncall-badge">
+                                <span>📞 On-Call:</span>
+                                <span id="onCallPersonName" contenteditable="true" spellcheck="false" oninput="saveDashboardData()" style="color: #c53030; outline: none;">John Doe</span>
+                            </div>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th class="sno-col">Serial No</th>
+                                    <th class="app-col">Application Name</th>
+                                    <th class="datetime-col">Date & Time</th>
+                                    <th class="action-col"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="outagesTableBody">
+                                <tr>
+                                    <td class="sno-col">1</td>
+                                    <td class="editable-cell" contenteditable="true" spellcheck="false" oninput="saveDashboardData()">IS Core Cluster / SAP Adapter</td>
+                                    <td class="editable-cell" contenteditable="true" spellcheck="false" oninput="saveDashboardData()">Aug 29, 2026 14:00 IST</td>
+                                    <td class="action-col"><button class="btn-del-row" onclick="deleteRow(this)" title="Delete row">×</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="table-action-row">
+                            <button class="btn-action-add" onclick="addOutageRow()">+ Add Outage</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Issues Tab -->
+                <div id="issuesTab" class="tab-pane">
+                    <div class="card">
+                        <div class="card-title">⚠️ Tracked Issues List</div>
+
+                        <div class="issue-subheading prod">
+                            <span>🔥 Production Issues</span>
+                        </div>
+                        <table class="data-table" id="prodIssuesTableBody">
+                            <thead>
+                                <tr>
+                                    <th class="sno-col">Serial No</th>
+                                    <th>Description</th>
+                                    <th class="action-col"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="sno-col">1</td>
+                                    <td class="editable-cell" contenteditable="true" spellcheck="false" oninput="saveDashboardData()">SAP Partner cert renewal scheduled for review.</td>
+                                    <td class="action-col"><button class="btn-del-row" onclick="deleteRow(this)" title="Delete row">×</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="table-action-row">
+                            <button class="btn-action-add" onclick="addRow('prodIssuesTableBody tbody', 'Enter production issue...')">+ Add Prod Issue</button>
+                        </div>
+
+                        <div class="issue-subheading non-prod">
+                            <span>🛠️ Non-Prod Issues</span>
+                        </div>
+                        <table class="data-table" id="nonProdIssuesTableBody">
+                            <thead>
+                                <tr>
+                                    <th class="sno-col">Serial No</th>
+                                    <th>Description</th>
+                                    <th class="action-col"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="sno-col">1</td>
+                                    <td class="editable-cell" contenteditable="true" spellcheck="false" oninput="saveDashboardData()">UAT Broker queue bottleneck observed during test cycle.</td>
+                                    <td class="action-col"><button class="btn-del-row" onclick="deleteRow(this)" title="Delete row">×</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="table-action-row">
+                            <button class="btn-action-add" onclick="addRow('nonProdIssuesTableBody tbody', 'Enter non-prod issue...')">+ Add Non-Prod Issue</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Deployments Tab -->
+                <div id="deploymentsTab" class="tab-pane">
+                    <div class="highlight-card deploy-theme">
+                        <div class="card-title">🚀 Production Deployments</div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th class="sno-col">Serial No</th>
+                                    <th class="date-col">Date</th>
+                                    <th class="ctask-col">CTASK Number</th>
+                                    <th class="action-col"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="deploymentsTableBody">
+                                <tr>
+                                    <td class="sno-col">1</td>
+                                    <td class="editable-cell" contenteditable="true" spellcheck="false" oninput="saveDashboardData()">Aug 29, 2026</td>
+                                    <td class="editable-cell" contenteditable="true" spellcheck="false" oninput="saveDashboardData()">CTASK0012345</td>
+                                    <td class="action-col"><button class="btn-del-row" onclick="deleteRow(this)" title="Delete row">×</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="table-action-row">
+                            <button class="btn-action-add" onclick="addDeploymentRow()">+ Add Deployment</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upgrades Tab -->
+                <div id="upgradeTab" class="tab-pane">
+                    <div class="highlight-card upgrade-theme">
+                        <div class="card-title">⚙️ Upgrade Updates</div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th class="sno-col">Serial No</th>
+                                    <th>Description</th>
+                                    <th class="action-col"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="upgradeTableBody">
+                                <tr>
+                                    <td class="sno-col">1</td>
+                                    <td class="editable-cell" contenteditable="true" spellcheck="false" oninput="saveDashboardData()">Completed DEV environment webMethods 10.15 upgrade and regression testing.</td>
+                                    <td class="action-col"><button class="btn-del-row" onclick="deleteRow(this)" title="Delete row">×</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="table-action-row">
+                            <button class="btn-action-add" onclick="addRow('upgradeTableBody', 'Enter upgrade update...')">+ Add Update</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tickets Tab -->
+                <div id="ticketsTab" class="tab-pane">
+                    <div class="card">
+                        <div class="card-title">📊 Ticket Metrics Summary</div>
+                        <div class="ticket-2col-grid">
+                            <div class="ticket-metric chg">
+                                <div class="ticket-label-group">
+                                    <span class="metric-name">CHG</span>
+                                    <span class="metric-sub">Change Requests</span>
+                                </div>
+                                <input type="number" id="chg" value="2" min="0" oninput="handleTicketChange()">
+                            </div>
+                            <div class="ticket-metric ctask">
+                                <div class="ticket-label-group">
+                                    <span class="metric-name">CTASK</span>
+                                    <span class="metric-sub">Change Tasks</span>
+                                </div>
+                                <input type="number" id="ctask" value="5" min="0" oninput="handleTicketChange()">
+                            </div>
+                            <div class="ticket-metric req">
+                                <div class="ticket-label-group">
+                                    <span class="metric-name">REQ</span>
+                                    <span class="metric-sub">Service Requests</span>
+                                </div>
+                                <input type="number" id="req" value="8" min="0" oninput="handleTicketChange()">
+                            </div>
+                            <div class="ticket-metric ritm">
+                                <div class="ticket-label-group">
+                                    <span class="metric-name">RITM</span>
+                                    <span class="metric-sub">Requested Items</span>
+                                </div>
+                                <input type="number" id="ritm" value="12" min="0" oninput="handleTicketChange()">
+                            </div>
+                            <div class="ticket-metric inc">
+                                <div class="ticket-label-group">
+                                    <span class="metric-name">INC</span>
+                                    <span class="metric-sub">Incidents</span>
+                                </div>
+                                <input type="number" id="inc" value="3" min="0" oninput="handleTicketChange()">
+                            </div>
+                            <div class="ticket-metric prb">
+                                <div class="ticket-label-group">
+                                    <span class="metric-name">PRB</span>
+                                    <span class="metric-sub">Problem Tickets</span>
+                                </div>
+                                <input type="number" id="prb" value="1" min="0" oninput="handleTicketChange()">
+                            </div>
+                        </div>
+
+                        <div class="ticket-total-banner">
+                            <span>Total Tickets Handled</span>
+                            <span id="totalTickets">31</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+    const STORAGE_KEY = 'WEBMETHODS_WEEKLY_DASHBOARD_DATA_FINAL_LATEST';
+
+    // --- NEW LOCAL FOLDER SYNC LOGIC --- //
+    
+    // Store handles in memory so we can read the file when selected from dropdown
+    let localFileHandles = new Map();
+
+    async function connectSharePointFolder() {
+        if (!('showDirectoryPicker' in window)) {
+            alert("Your browser does not support the File System Access API. Please use a modern version of Chrome, Edge, or Opera, or use the manual upload button.");
+            return;
+        }
+
+        try {
+            // Prompt user to select their local synced SharePoint directory
+            const dirHandle = await window.showDirectoryPicker({
+                mode: 'read'
+            });
+
+            localFileHandles.clear();
+            const dropdown = document.getElementById('weekDropdown');
+            dropdown.innerHTML = '<option value="">-- Choose a week to load --</option>';
+
+            // Iterate through the files in the directory
+            for await (const entry of dirHandle.values()) {
+                if (entry.kind === 'file' && (entry.name.toLowerCase().endsWith('.xlsx') || entry.name.toLowerCase().endsWith('.xls'))) {
+                    localFileHandles.set(entry.name, entry);
+                    
+                    // Create nicely formatted option text based on filename
+                    let cleanName = entry.name.replace(/\.xlsx?/i, '').replace(/_/g, ' ');
+
+                    const option = document.createElement('option');
+                    option.value = entry.name;
+                    option.text = cleanName;
+                    dropdown.appendChild(option);
+                }
+            }
+
+            if (localFileHandles.size === 0) {
+                alert("No Excel files (.xlsx or .xls) found in that folder.");
+                return;
+            }
+
+            // Hide connect button, show dropdown
+            document.getElementById('connect-area').style.display = 'none';
+            document.getElementById('selection-area').style.display = 'block';
+
+        } catch (error) {
+            console.error("Directory picker error or cancelled:", error);
+            // Ignore abort errors (user clicked cancel)
+            if (error.name !== 'AbortError') {
+                alert("Could not connect to the folder. You can still use the regular upload button.");
+            }
+        }
+    }
+
+    async function loadSelectedWeek() {
+        const dropdown = document.getElementById('weekDropdown');
+        const selectedFileName = dropdown.value;
+        
+        if (!selectedFileName) return; // User selected the default "-- Choose a week --" option
+
+        try {
+            const fileHandle = localFileHandles.get(selectedFileName);
+            const file = await fileHandle.getFile();
+            
+            // Re-use our existing Excel processing logic for the selected File
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                processExcelWorkbook(workbook);
+                
+                // Update header date based on filename
+                let cleanDateStr = dropdown.options[dropdown.selectedIndex].text;
+                document.getElementById('weekendEndingDate').innerText = cleanDateStr;
+                
+                // Close overlay
+                closeOverlay();
+            };
+            reader.readAsArrayBuffer(file);
+        } catch (error) {
+            console.error("Error reading file:", error);
+            alert("Could not load the selected file.");
+        }
+    }
+
+    function skipToDashboard() {
+        loadSavedDashboardData();
+        document.getElementById('weekendEndingDate').innerText = getLastSundayDate();
+        closeOverlay();
+    }
+
+    function closeOverlay() {
+        const overlay = document.getElementById('intro-overlay');
+        overlay.style.opacity = '0';
+        setTimeout(() => {
+            overlay.style.display = 'none';
+        }, 600);
+    }
+    // -------------------------------------------- //
+
+
+    function getLastSundayDate() {
+        const date = new Date();
+        const day = date.getDay();
+        const diff = (day === 0) ? 0 : day;
+        date.setDate(date.getDate() - diff);
+        return date.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+    }
+
+    function switchTab(tabId, tabButton, themeClass) {
+        document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+        document.querySelectorAll('.nav-tab').forEach(btn => btn.classList.remove('active'));
+        
+        const activePane = document.getElementById(tabId);
+        void activePane.offsetWidth; 
+        
+        activePane.classList.add('active');
+        tabButton.classList.add('active');
+    }
+
+    function calculateInitials(fullName) {
+        if (!fullName) return '--';
+        const parts = fullName.trim().split(/\s+/).filter(Boolean);
+        if (parts.length === 0) return '--';
+        if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+        
+        const firstInitial = parts[0].charAt(0);
+        const lastInitial = parts[parts.length - 1].charAt(0);
+        return (firstInitial + lastInitial).toUpperCase();
+    }
+
+    function handleNameUpdate(nameElement) {
+        const card = nameElement.closest('.member-card');
+        const avatar = card.querySelector('.member-avatar');
+        if (avatar) avatar.innerText = calculateInitials(nameElement.innerText);
+        saveDashboardData();
+    }
+
+    function addRow(tbodyId, defaultText) {
+        let tbody = document.getElementById(tbodyId);
+        if(!tbody) tbody = document.querySelector(`#${tbodyId.split(' ')[0]} tbody`);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="sno-col"></td>
+            <td class="editable-cell" contenteditable="true" spellcheck="false" oninput="saveDashboardData()">${defaultText}</td>
+            <td class="action-col"><button class="btn-del-row" onclick="deleteRow(this)" title="Delete row">×</button></td>
+        `;
+        tbody.appendChild(tr);
+        reindexTable(tbody);
+        saveDashboardData();
+    }
+
+    function addDeploymentRow() {
+        const tbody = document.getElementById('deploymentsTableBody');
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="sno-col"></td>
+            <td class="editable-cell" contenteditable="true" spellcheck="false" oninput="saveDashboardData()">YYYY-MM-DD</td>
+            <td class="editable-cell" contenteditable="true" spellcheck="false" oninput="saveDashboardData()">CTASK0000000</td>
+            <td class="action-col"><button class="btn-del-row" onclick="deleteRow(this)" title="Delete row">×</button></td>
+        `;
+        tbody.appendChild(tr);
+        reindexTable(tbody);
+        saveDashboardData();
+    }
+
+    function addOutageRow() {
+        const tbody = document.getElementById('outagesTableBody');
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="sno-col"></td>
+            <td class="editable-cell" contenteditable="true" spellcheck="false" oninput="saveDashboardData()">App Name</td>
+            <td class="editable-cell" contenteditable="true" spellcheck="false" oninput="saveDashboardData()">YYYY-MM-DD HH:MM</td>
+            <td class="action-col"><button class="btn-del-row" onclick="deleteRow(this)" title="Delete row">×</button></td>
+        `;
+        tbody.appendChild(tr);
+        reindexTable(tbody);
+        saveDashboardData();
+    }
+
+    function deleteRow(btn) {
+        const tr = btn.closest('tr');
+        const tbody = tr.closest('tbody');
+        tr.remove();
+        reindexTable(tbody);
+        saveDashboardData();
+    }
+
+    function reindexTable(tbody) {
+        const rows = tbody.querySelectorAll('tr');
+        rows.forEach((row, idx) => {
+            const snoCell = row.querySelector('.sno-col');
+            if (snoCell) snoCell.innerText = idx + 1;
+        });
+    }
+
+    function handleTicketChange() {
+        calculateTotalTickets();
+        saveDashboardData();
+    }
+
+    function calculateTotalTickets() {
+        const ticketTypes = ['chg', 'ctask', 'req', 'ritm', 'inc', 'prb'];
+        let total = 0;
+        ticketTypes.forEach(id => {
+            const val = parseInt(document.getElementById(id).value, 10);
+            total += isNaN(val) ? 0 : val;
+        });
+        document.getElementById('totalTickets').innerText = total;
+    }
+
+    function getTableData(tableId) {
+        const rows = document.querySelectorAll(`#${tableId} tbody tr`);
+        const data = [];
+        rows.forEach(r => {
+            const textCell = r.querySelector('.editable-cell');
+            if (textCell) data.push(textCell.innerText.trim());
+        });
+        return data;
+    }
+
+    function setTableData(tableId, items) {
+        const tbody = document.querySelector(`#${tableId} tbody`);
+        if(!tbody) return;
+        tbody.innerHTML = '';
+        if (!items || items.length === 0) return;
+        items.forEach((itemText, idx) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="sno-col">${idx + 1}</td>
+                <td class="editable-cell" contenteditable="true" spellcheck="false" oninput="saveDashboardData()">${itemText}</td>
+                <td class="action-col"><button class="btn-del-row" onclick="deleteRow(this)" title="Delete row">×</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function getOutageData() {
+        const rows = document.querySelectorAll('#outagesTableBody tr');
+        const data = [];
+        rows.forEach(r => {
+            const cells = r.querySelectorAll('.editable-cell');
+            if (cells.length === 2) {
+                data.push({ app: cells[0].innerText.trim(), datetime: cells[1].innerText.trim() });
+            }
+        });
+        return data;
+    }
+
+    function setOutageData(items) {
+        const tbody = document.getElementById('outagesTableBody');
+        tbody.innerHTML = '';
+        if (!items || items.length === 0) return;
+        items.forEach((item, idx) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="sno-col">${idx + 1}</td>
+                <td class="editable-cell" contenteditable="true" spellcheck="false" oninput="saveDashboardData()">${item.app || ''}</td>
+                <td class="editable-cell" contenteditable="true" spellcheck="false" oninput="saveDashboardData()">${item.datetime || ''}</td>
+                <td class="action-col"><button class="btn-del-row" onclick="deleteRow(this)" title="Delete row">×</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function getDeploymentData() {
+        const rows = document.querySelectorAll('#deploymentsTableBody tr');
+        const data = [];
+        rows.forEach(r => {
+            const cells = r.querySelectorAll('.editable-cell');
+            if (cells.length === 2) {
+                data.push({ date: cells[0].innerText.trim(), ctask: cells[1].innerText.trim() });
+            }
+        });
+        return data;
+    }
+
+    function setDeploymentData(items) {
+        const tbody = document.getElementById('deploymentsTableBody');
+        tbody.innerHTML = '';
+        if (!items || items.length === 0) return;
+        items.forEach((item, idx) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="sno-col">${idx + 1}</td>
+                <td class="editable-cell" contenteditable="true" spellcheck="false" oninput="saveDashboardData()">${item.date || ''}</td>
+                <td class="editable-cell" contenteditable="true" spellcheck="false" oninput="saveDashboardData()">${item.ctask || ''}</td>
+                <td class="action-col"><button class="btn-del-row" onclick="deleteRow(this)" title="Delete row">×</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function saveDashboardData() {
+        const state = {
+            onCall: document.getElementById('onCallPersonName').innerText.trim(),
+            tickets: {
+                chg: document.getElementById('chg').value,
+                ctask: document.getElementById('ctask').value,
+                req: document.getElementById('req').value,
+                ritm: document.getElementById('ritm').value,
+                inc: document.getElementById('inc').value,
+                prb: document.getElementById('prb').value
+            },
+            customer: Array.from(document.querySelectorAll('#customerContainer .member-name')).map(el => el.innerText.trim()),
+            onshore: Array.from(document.querySelectorAll('#onshoreContainer .member-name')).map(el => el.innerText.trim()),
+            offshore: Array.from(document.querySelectorAll('#offshoreContainer .member-name')).map(el => el.innerText.trim()),
+            outages: getOutageData(),
+            prodIssues: getTableData('prodIssuesTableBody'),
+            nonProdIssues: getTableData('nonProdIssuesTableBody'),
+            upgradeUpdates: getTableData('upgradeTab'),
+            deployments: getDeploymentData()
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function loadSavedDashboardData() {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) { calculateTotalTickets(); return; }
+        try {
+            const state = JSON.parse(raw);
+            if (state.onCall) document.getElementById('onCallPersonName').innerText = state.onCall;
+            if (state.tickets) {
+                ['chg', 'ctask', 'req', 'ritm', 'inc', 'prb'].forEach(id => {
+                    if (state.tickets[id] !== undefined) document.getElementById(id).value = state.tickets[id];
+                });
+                calculateTotalTickets();
+            }
+            if (state.customer && state.customer.length) renderTeamContainer('customerContainer', state.customer, 'bms-avatar');
+            if (state.onshore && state.onshore.length) renderTeamContainer('onshoreContainer', state.onshore, 'hcl-avatar');
+            if (state.offshore && state.offshore.length) renderTeamContainer('offshoreContainer', state.offshore, 'hcl-avatar');
+            
+            if (state.outages) setOutageData(state.outages);
+            if (state.prodIssues) setTableData('prodIssuesTableBody', state.prodIssues);
+            if (state.nonProdIssues) setTableData('nonProdIssuesTableBody', state.nonProdIssues);
+            if (state.upgradeUpdates) setTableData('upgradeTab', state.upgradeUpdates);
+            if (state.deployments) setDeploymentData(state.deployments);
+        } catch (e) { console.error('Error loading state:', e); }
+    }
+
+    function renderTeamContainer(containerId, names, avatarClass) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '';
+        names.forEach(name => {
+            const card = document.createElement('div');
+            card.className = 'member-card';
+            card.innerHTML = `
+                <div class="member-avatar ${avatarClass}">${calculateInitials(name)}</div>
+                <div class="member-name" contenteditable="true" spellcheck="false" oninput="handleNameUpdate(this)">${name}</div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    // Processing extracted to share logic
+    function processExcelWorkbook(workbook) {
+        if (workbook.Sheets['Tickets']) {
+            XLSX.utils.sheet_to_json(workbook.Sheets['Tickets']).forEach(row => {
+                const type = (row.Type || row.type || '').trim().toLowerCase();
+                const count = parseInt(row.Count || row.count || 0, 10);
+                if (document.getElementById(type)) document.getElementById(type).value = count;
+            });
+            calculateTotalTickets();
+        }
+
+        if (workbook.Sheets['Team']) {
+            const cust = [], on = [], off = [];
+            XLSX.utils.sheet_to_json(workbook.Sheets['Team']).forEach(member => {
+                const loc = (member.Location || '').toLowerCase();
+                const name = member.Name || 'Member';
+                if (loc.includes('customer') || loc.includes('bms')) cust.push(name);
+                else if (loc.includes('onshore')) on.push(name);
+                else off.push(name);
+            });
+            if (cust.length) renderTeamContainer('customerContainer', cust, 'bms-avatar');
+            if (on.length) renderTeamContainer('onshoreContainer', on, 'hcl-avatar');
+            if (off.length) renderTeamContainer('offshoreContainer', off, 'hcl-avatar');
+        }
+
+        if (workbook.Sheets['Outages']) {
+            const outData = XLSX.utils.sheet_to_json(workbook.Sheets['Outages']);
+            if (outData.length > 0 && outData[0].OnCall) document.getElementById('onCallPersonName').innerText = outData[0].OnCall;
+            const items = outData.map(r => ({ app: r['Application Name'] || r.Application || '', datetime: r['Date & Time'] || r.Date || '' })).filter(i => i.app || i.datetime);
+            setOutageData(items);
+        }
+
+        if (workbook.Sheets['Prod_Issues']) setTableData('prodIssuesTableBody', XLSX.utils.sheet_to_json(workbook.Sheets['Prod_Issues']).map(r => r.Description).filter(Boolean));
+        if (workbook.Sheets['NonProd_Issues']) setTableData('nonProdIssuesTableBody', XLSX.utils.sheet_to_json(workbook.Sheets['NonProd_Issues']).map(r => r.Description).filter(Boolean));
+        if (workbook.Sheets['Upgrade_Updates']) setTableData('upgradeTab', XLSX.utils.sheet_to_json(workbook.Sheets['Upgrade_Updates']).map(r => r.Description || r.Update).filter(Boolean));
+        
+        if (workbook.Sheets['Deployments']) {
+            const depData = XLSX.utils.sheet_to_json(workbook.Sheets['Deployments']);
+            const items = depData.map(r => ({ date: r['Date'] || '', ctask: r['CTASK Number'] || r.CTASK || '' })).filter(i => i.date || i.ctask);
+            setDeploymentData(items);
+        }
+
+        saveDashboardData();
+    }
+
+    function handleFileUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            processExcelWorkbook(workbook);
+            document.getElementById('weekendEndingDate').innerText = 'Custom Upload';
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    function downloadTemplate() {
+        const wb = XLSX.utils.book_new();
+        const ticketsWS = XLSX.utils.json_to_sheet([{ Type: 'CHG', Count: 2 }, { Type: 'CTASK', Count: 5 }, { Type: 'REQ', Count: 8 }, { Type: 'RITM', Count: 12 }, { Type: 'INC', Count: 3 }, { Type: 'PRB', Count: 1 }]);
+        const teamWS = XLSX.utils.json_to_sheet([{ Location: 'Customer', Name: 'Alex Customer' }, { Location: 'Onshore', Name: 'John Doe' }, { Location: 'Offshore', Name: 'Jane Smith' }, { Location: 'Offshore', Name: 'Raj Kumar' }, { Location: 'Offshore', Name: 'Amy Lin' }, { Location: 'Offshore', Name: 'Mike Patel' }, { Location: 'Offshore', Name: 'Suresh Raina' }]);
+        const outagesWS = XLSX.utils.json_to_sheet([{ 'Serial Number': 1, 'Application Name': 'IS Core Cluster', 'Date & Time': '2026-08-29 14:00 IST', OnCall: 'John Doe' }]);
+        const prodIssuesWS = XLSX.utils.json_to_sheet([{ 'Serial Number': 1, Description: 'SAP Partner cert renewal scheduled for review.' }]);
+        const nonProdIssuesWS = XLSX.utils.json_to_sheet([{ 'Serial Number': 1, Description: 'UAT Broker queue bottleneck observed during test cycle.' }]);
+        const deploymentsWS = XLSX.utils.json_to_sheet([{ 'Serial Number': 1, 'Date': '2026-08-29', 'CTASK Number': 'CTASK0012345' }]);
+        const upgradeWS = XLSX.utils.json_to_sheet([{ 'Serial Number': 1, Description: 'Completed DEV environment webMethods 10.15 upgrade and regression testing.' }]);
+
+        XLSX.utils.book_append_sheet(wb, ticketsWS, 'Tickets');
+        XLSX.utils.book_append_sheet(wb, teamWS, 'Team');
+        XLSX.utils.book_append_sheet(wb, outagesWS, 'Outages');
+        XLSX.utils.book_append_sheet(wb, prodIssuesWS, 'Prod_Issues');
+        XLSX.utils.book_append_sheet(wb, nonProdIssuesWS, 'NonProd_Issues');
+        XLSX.utils.book_append_sheet(wb, deploymentsWS, 'Deployments');
+        XLSX.utils.book_append_sheet(wb, upgradeWS, 'Upgrade_Updates');
+        XLSX.writeFile(wb, 'webMethods_Weekly_Report_Template.xlsx');
+    }
+
+</script>
+</body>
+</html>
